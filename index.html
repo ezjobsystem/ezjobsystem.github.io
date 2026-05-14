@@ -302,6 +302,10 @@ function render(){
   }else renderJobs();
 }
 
+
+function getSt(k){return STATUS.find(s=>s.k===k)||STATUS[0]}
+function getPr(k){return PRIORITY.find(p=>p.k===k)||PRIORITY[0]}
+
 // ---- CALENDAR ----
 const INSTALLER_JOBS=['Install Equipment','Dismantle Equipment'];
 const TRANSPORT_JOBS=['Remove Equipment','Delivery Equipment'];
