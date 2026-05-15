@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Management System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;font-size:14px;color:#1a1a2e;background:#f0f4f8}
+.hidden{display:none!important}
+input,select,textarea{width:100%;padding:9px 12px;font-size:13px;border:1px solid #d1d9e0;border-radius:8px;background:#fff;color:#1a1a2e;font-family:inherit;outline:none;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,.1)}
+textarea{resize:vertical;min-height:100px}
+label{font-size:12px;color:#5a6a7e;display:block;margin-bottom:4px;margin-top:10px}
+.btn{padding:8px 16px;font-size:13px;border-radius:8px;cursor:pointer;border:1px solid #d1d9e0;background:#fff;color:#1a1a2e;transition:all .15s;font-family:inherit}
+.btn:hover{background:#f0f4f8}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:#185FA5;color:#fff;border-color:#185FA5}
+.btn-primary:hover:not(:disabled){background:#0C447C}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-danger{color:#A32D2D;border-color:#F09595}
+.btn-add{background:#EAF3DE;color:#3B6D11;border-color:#7CB95A;font-size:12px;padding:5px 12px}
+.btn-add:hover{background:#d4ecbe}
+.btn-view{background:#E6F1FB;color:#185FA5;border-color:#185FA5;font-size:11px;padding:3px 10px;white-space:nowrap}
+.btn-view:hover{background:#185FA5;color:#fff}
+
+/* AUTH */
+.auth-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)}
+.auth-box{width:100%;max-width:380px;background:#fff;border-radius:16px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.auth-logo-icon{width:36px;height:36px;background:#185FA5;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.auth-err{background:#FCEBEB;border:1px solid #F09595;border-radius:8px;padding:10px 12px;font-size:13px;color:#A32D2D;margin-bottom:12px}
+
+/* APP */
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #e8edf2;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.tabs{display:flex;gap:2px;padding:10px 20px 0;background:#fff;border-bottom:1px solid #e8edf2;flex-wrap:wrap}
+.tab{padding:7px 16px;font-size:13px;border-radius:8px 8px 0 0;cursor:pointer;color:#5a6a7e;border:1px solid transparent;border-bottom:none;transition:all .15s}
+.tab.active{color:#1a1a2e;background:#f0f4f8;border-color:#e8edf2;font-weight:500}
+.content{flex:1;overflow-y:auto;padding:20px;background:#f0f4f8}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500}
+.s-pending{background:#E6F1FB;color:#185FA5}
+.s-inprog{background:#FAEEDA;color:#854F0B}
+.s-done{background:#EAF3DE;color:#3B6D11}
+.p-low{background:#F1EFE8;color:#5F5E5A}
+.p-med{background:#E6F1FB;color:#185FA5}
+.p-high{background:#FAEEDA;color:#854F0B}
+.p-urg{background:#FCEBEB;color:#A32D2D}
+
+/* LAYOUT */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .2s}
+.card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.section-title{font-size:11px;font-weight:600;color:#5a6a7e;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
+
+/* JOB LIST */
+.job-row{display:grid;grid-template-columns:36px 1fr 100px 80px 90px 100px 100px 52px;gap:6px;align-items:center;padding:10px 14px;background:#fff;border-radius:10px;margin-bottom:6px;font-size:13px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:box-shadow .15s}
+.job-row:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.col-hdr{display:grid;grid-template-columns:36px 1fr 100px 80px 90px 100px 100px 52px;gap:6px;padding:5px 14px;font-size:11px;color:#5a6a7e;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-sel{width:auto!important;min-width:120px;font-size:12px;margin-top:0}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto}
+.modal{background:#fff;border-radius:16px;width:620px;max-width:96vw;margin-bottom:40px;padding:24px 28px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.remark-box{background:#f0f4f8;border-radius:8px;padding:12px;font-size:13px;line-height:1.8;white-space:pre-wrap}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-title{font-size:18px;font-weight:600}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day-name{text-align:center;font-size:11px;font-weight:600;color:#5a6a7e;padding:6px 0;text-transform:uppercase}
+.cal-cell{background:#fff;border-radius:10px;min-height:80px;padding:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);cursor:pointer;transition:box-shadow .15s;border:1.5px solid transparent}
+.cal-cell:hover{box-shadow:0 3px 10px rgba(0,0,0,.1)}
+.cal-cell.today{border-color:#E53935;background:#fff5f5}
+.cal-cell.other-month{background:#f8fafc;opacity:.5;cursor:default}
+.cal-cell.has-jobs{border-color:#7CB95A}
+.cal-cell.today.has-jobs{border-color:#E53935}
+.cal-date{font-size:12px;font-weight:600;margin-bottom:3px;color:#5a6a7e}
+.cal-cell.today .cal-date{color:#E53935;font-weight:700}
+.job-pill{display:block;border-radius:4px;padding:2px 5px;font-size:10px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill-installer{background:#EAF3DE;color:#3B6D11}
+.pill-transport{background:#FAEEDA;color:#854F0B}
+.filter-bar{display:flex;gap:6px;margin-bottom:14px}
+.filter-pill{padding:5px 16px;font-size:12px;border-radius:99px;border:1px solid #d1d9e0;background:#fff;color:#5a6a7e;cursor:pointer;font-family:inherit;transition:all .15s}
+.fp-active-all{background:#185FA5;color:#fff;border-color:#185FA5}
+.fp-active-installer{background:#EAF3DE;color:#3B6D11;border-color:#7CB95A;font-weight:500}
+.fp-active-transport{background:#FAEEDA;color:#854F0B;border-color:#EF9F27;font-weight:500}
+
+/* DAY VIEW */
+.day-job-item{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:10px;padding:12px 16px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.05);gap:12px}
+.day-job-num{font-size:13px;font-weight:700;color:#185FA5;min-width:24px}
+.day-job-info{flex:1;min-width:0}
+.day-job-title{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-job-sub{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px}
+
+/* TASK BLOCK */
+.task-block{background:#f8fafc;border:1px solid #e8edf2;border-radius:10px;padding:14px 16px;margin-bottom:10px;position:relative}
+.remove-task{position:absolute;top:10px;right:10px;background:none;border:none;cursor:pointer;color:#c0c8d4;font-size:16px}
+.remove-task:hover{color:#A32D2D}
+
+/* SPINNER */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+.spin-dark{border-color:#d1d9e0;border-top-color:#185FA5}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:56px 0;color:#8a9ab0;font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-view" class="auth-wrap">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg width="18" height="18" fill="none" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="white"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="white" opacity=".4"/></svg></div>
+      <span style="font-size:17px;font-weight:600">Work Management System</span>
+    </div>
+    <div id="auth-err" class="auth-err hidden"></div>
+    <div style="font-size:20px;font-weight:600;margin-bottom:6px">Sign In</div>
+    <p style="font-size:13px;color:#5a6a7e;margin-bottom:20px">Sign in to your account to continue</p>
+    <label>Email Address</label>
+    <input type="email" id="login-email" placeholder="email@example.com" autocomplete="email" style="margin-bottom:10px">
+    <label>Password</label>
+    <input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" style="width:100%;margin-top:4px;padding:10px" id="login-btn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-view" class="app hidden">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:30px;height:30px;background:#185FA5;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="white"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="white" opacity=".6"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="white" opacity=".4"/></svg></div>
+      <span style="font-weight:600;font-size:15px">Work Management System</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="user-label" style="font-size:13px;color:#5a6a7e"></span>
+      <button class="btn btn-sm" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="tabs" id="main-tabs">
+    <div class="tab active" id="tab-cal" onclick="switchTab('calendar',this)">📅 Calendar</div>
+    <div class="tab" id="tab-jobs" onclick="switchTab('jobs',this)">📋 Job List</div>
+    <div class="tab" id="tab-newjob" onclick="openForm(null)" style="color:#185FA5;font-weight:500">＋ New Job</div>
+    <div class="tab" id="tab-users" onclick="switchTab('users',this)" style="display:none;font-weight:500">👥 Users</div>
+  </div>
+  <div class="content" id="content"><div class="empty"><span class="spin spin-dark"></span> Loading...</div></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg hidden" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><div id="modal-body"></div></div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const SUPA_URL = 'https://mmetwzpwnadckgrocxef.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXR3enB3bmFkY2tncm9jeGVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjM4ODEsImV4cCI6MjA5MjkzOTg4MX0.c8rMUy-mwMknDp0soPUmpmkZp26LE8T0tW3IEWr0Elc';
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const DEPTS = ['Manager','Supervisor','Sales','Admin'];
+const STATUS = [
+  {k:'pending', l:'Not Started', cls:'s-pending'},
+  {k:'inprog',  l:'In Progress', cls:'s-inprog'},
+  {k:'done',    l:'Completed',   cls:'s-done'}
+];
+const PRIORITY = [
+  {k:'low',  l:'LOW',    cls:'p-low'},
+  {k:'med',  l:'MEDIUM', cls:'p-med'},
+  {k:'high', l:'HIGH',   cls:'p-high'},
+  {k:'urg',  l:'URGENT', cls:'p-urg'}
+];
+const JOB_TYPES    = ['Install Equipment','Dismantle Equipment','Remove Equipment','Delivery Equipment'];
+const INSTALLERS   = ['Roy','Haffiz','Others'];
+const TRANSPORTS   = ['Haffiz','Roy','Others'];
+const INSTALLER_TYPES = ['Install Equipment','Dismantle Equipment'];
+const TRANSPORT_TYPES = ['Remove Equipment','Delivery Equipment'];
+const MONTHS_SHORT = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const MONTHS_LONG  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_MON     = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const ROLE_LABELS  = {admin:'Admin', creator:'Creator', installer:'Installer', transport:'Transport'};
+const ROLE_COLORS  = {admin:'#1a1a2e', creator:'#185FA5', installer:'#3B6D11', transport:'#854F0B'};
+
+// ============================================================
+// STATE
+// ============================================================
+let session = null, user = null, userName = '', userRole = 'creator';
+let jobs = [], currentTab = 'calendar', selectedDate = null;
+let calYear = new Date().getFullYear(), calMonth = new Date().getMonth(), calFilter = 'all';
+let taskCounter = 0, taskIds = [];
+let fStatus = '', fPriority = '', fDept = '';
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getSt(k) { return STATUS.find(s => s.k === k) || STATUS[0]; }
+function getPr(k) { return PRIORITY.find(p => p.k === k) || PRIORITY[0]; }
+function formatDate(d) {
+  if (!d) return '—';
+  const p = d.split('-');
+  if (p.length !== 3) return d;
+  return `${String(p[2]).padStart(2,'0')} ${MONTHS_SHORT[parseInt(p[1])-1]} ${p[0]}`;
+}
+function toYMD(y, m, d) {
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function jobCategory(j) {
+  let tasks = [];
+  try { tasks = typeof j.tasks === 'string' ? JSON.parse(j.tasks) : (j.tasks || []); } catch(e) {}
+  const hasI = tasks.some(t => INSTALLER_TYPES.includes(t.jobType));
+  const hasT = tasks.some(t => TRANSPORT_TYPES.includes(t.jobType));
+  if (hasI && hasT) return 'both';
+  if (hasI) return 'installer';
+  if (hasT) return 'transport';
+  return 'other';
+}
+function autoAssign(jobType) {
+  if (INSTALLER_TYPES.includes(jobType)) return {installer:'Roy', transport:''};
+  if (TRANSPORT_TYPES.includes(jobType)) return {installer:'', transport:'Haffiz'};
+  return {installer:'', transport:''};
+}
+
+// ============================================================
+// API
+// ============================================================
+async function callAuth(path, body) {
+  try {
+    const r = await fetch(SUPA_URL + '/auth/v1' + path, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'apikey': SUPA_KEY},
+      body: JSON.stringify(body)
+    });
+    return await r.json();
+  } catch(e) { return {error: e.message}; }
+}
+
+async function rest(path, opts = {}) {
+  const tok = session?.access_token || SUPA_KEY;
+  const r = await fetch(SUPA_URL + '/rest/v1' + path, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + tok,
+      'Prefer': 'return=representation',
+      ...(opts.headers || {})
+    }
+  });
+  const t = await r.text();
+  try { return {ok: r.ok, status: r.status, data: t ? JSON.parse(t) : null}; }
+  catch { return {ok: r.ok, status: r.status, data: t}; }
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  if (!email || !pw) return showAuthErr('Please enter your email and password.');
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Signing in...';
+  const res = await callAuth('/token?grant_type=password', {email, password: pw});
+  btn.disabled = false; btn.innerHTML = 'Sign In';
+  if (res.error || res.error_description) return showAuthErr(res.error_description || res.error || 'Sign in failed.');
+  session = res; user = res.user;
+  userName = user?.user_metadata?.full_name || user?.email || '';
+  userRole = user?.user_metadata?.role || 'creator';
+  localStorage.setItem('wms_session', JSON.stringify(res));
+  enterApp();
+}
+
+function showAuthErr(msg) {
+  const el = document.getElementById('auth-err');
+  el.textContent = msg; el.classList.remove('hidden');
+}
+
+function doLogout() {
+  session = null; user = null; userName = ''; userRole = 'creator'; jobs = [];
+  localStorage.removeItem('wms_session');
+  document.getElementById('app-view').classList.add('hidden');
+  document.getElementById('auth-view').classList.remove('hidden');
+  document.getElementById('auth-err').classList.add('hidden');
+}
+
+async function enterApp() {
+  document.getElementById('auth-view').classList.add('hidden');
+  document.getElementById('app-view').classList.remove('hidden');
+
+  // Set user label with role badge
+  const color = ROLE_COLORS[userRole] || '#185FA5';
+  const label = ROLE_LABELS[userRole] || userRole;
+  document.getElementById('user-label').innerHTML =
+    `${userName} <span style="background:${color};color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;margin-left:4px">${label}</span>`;
+
+  // Validate role - must be one of the 4 valid roles
+  const validRoles = ['admin','creator','installer','transport'];
+  if (!validRoles.includes(userRole)) userRole = 'installer'; // default to most restricted if unknown
+
+  // ============================================================
+  // TAB VISIBILITY BY ROLE:
+  // Admin    → Calendar, Job List, New Job, Users
+  // Creator  → Calendar, Job List, New Job
+  // Installer→ Calendar only
+  // Transport→ Calendar only
+  // ============================================================
+  const tabJobs    = document.getElementById('tab-jobs');
+  const tabNewJob  = document.getElementById('tab-newjob');
+  const tabUsers   = document.getElementById('tab-users');
+
+  if (userRole === 'admin') {
+    tabJobs.style.display   = '';
+    tabNewJob.style.display = '';
+    tabUsers.style.display  = '';
+  } else if (userRole === 'creator') {
+    tabJobs.style.display   = '';
+    tabNewJob.style.display = '';
+    tabUsers.style.display  = 'none';
+  } else {
+    // installer and transport - calendar only
+    tabJobs.style.display   = 'none';
+    tabNewJob.style.display = 'none';
+    tabUsers.style.display  = 'none';
+  }
+
+  // Set default calendar filter
+  if (isTransport) calFilter = 'transport';
+  else if (isInstaller) calFilter = 'installer';
+  else calFilter = 'all';
+
+  await loadJobs();
+  render();
+}
+
+// ============================================================
+// DATA
+// ============================================================
+async function loadJobs() {
+  const r = await rest('/jobs?order=created_at.desc');
+  if (r.ok && Array.isArray(r.data)) jobs = r.data;
+  else jobs = [];
+}
+
+// ============================================================
+// ROUTING
+// ============================================================
+function switchTab(tab, el) {
+  // Security check - only admin can access users tab
+  if (tab === 'users' && userRole !== 'admin') return;
+  // Security check - only admin/creator can access jobs and newjob
+  if ((tab === 'jobs') && userRole !== 'admin' && userRole !== 'creator') return;
+  currentTab = tab; selectedDate = null;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else document.getElementById('tab-' + tab)?.classList.add('active');
+  render();
+}
+
+function render() {
+  if (currentTab === 'calendar') {
+    selectedDate ? renderDayView(selectedDate) : renderCalendar();
+  } else if (currentTab === 'jobs') {
+    renderJobs();
+  } else if (currentTab === 'users') {
+    renderUsers();
+  }
+}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+function getJobsForDate(ymd, filter) {
+  return jobs.filter(j => {
+    if (!(j.start_date <= ymd && j.end_date >= ymd)) return false;
+    if (filter === 'all') return true;
+    const cat = jobCategory(j);
+    if (filter === 'installer') return cat === 'installer' || cat === 'both';
+    if (filter === 'transport') return cat === 'transport' || cat === 'both';
+    return true;
+  });
+}
+
+function renderCalendar() {
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const firstDayMon = (firstDay === 0) ? 6 : firstDay - 1;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  // Build filter bar based on role
+  const isAdminOrCreator = userRole === 'admin' || userRole === 'creator';
+  const isInstaller = userRole === 'installer';
+  let filterBarHTML = '<div class="filter-bar">';
+  if (isAdminOrCreator) filterBarHTML += `<button class="filter-pill${calFilter==='all'?' fp-active-all':''}" onclick="calFilter='all';renderCalendar()">All</button>`;
+  if (isAdminOrCreator || isInstaller) filterBarHTML += `<button class="filter-pill${calFilter==='installer'?' fp-active-installer':''}" onclick="calFilter='installer';renderCalendar()">Installer</button>`;
+  filterBarHTML += `<button class="filter-pill${calFilter==='transport'?' fp-active-transport':''}" onclick="calFilter='transport';renderCalendar()">Transport</button>`;
+  filterBarHTML += '</div>';
+
+  let cells = '';
+  // Prev month grey cells
+  for (let i = firstDayMon - 1; i >= 0; i--) {
+    cells += `<div class="cal-cell other-month"><div class="cal-date">${daysInPrev - i}</div></div>`;
+  }
+  // Current month cells
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ymd = toYMD(calYear, calMonth, d);
+    const dayJobs = getJobsForDate(ymd, calFilter);
+    const isToday = today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === d;
+    let pills = '';
+    dayJobs.forEach(j => {
+      const cat = jobCategory(j);
+      const lbl = j.brand || j.client || '—';
+      if (calFilter === 'installer') pills += `<span class="job-pill pill-installer">${lbl}</span>`;
+      else if (calFilter === 'transport') pills += `<span class="job-pill pill-transport">${lbl}</span>`;
+      else {
+        if (cat === 'installer') pills += `<span class="job-pill pill-installer">${lbl}</span>`;
+        else if (cat === 'transport') pills += `<span class="job-pill pill-transport">${lbl}</span>`;
+        else if (cat === 'both') {
+          pills += `<span class="job-pill pill-installer">${lbl}</span>`;
+          pills += `<span class="job-pill pill-transport">${lbl}</span>`;
+        }
+      }
+    });
+    cells += `<div class="cal-cell${isToday?' today':''}${dayJobs.length>0?' has-jobs':''}" onclick="selectDate('${ymd}')">
+      <div class="cal-date">${d}</div>${pills}
+    </div>`;
+  }
+  // Next month grey cells
+  const totalCells = Math.ceil((firstDayMon + daysInMonth) / 7) * 7;
+  for (let d = 1; d <= totalCells - firstDayMon - daysInMonth; d++) {
+    cells += `<div class="cal-cell other-month"><div class="cal-date">${d}</div></div>`;
+  }
+
+  document.getElementById('content').innerHTML = filterBarHTML + `
+    <div class="cal-header">
+      <div class="cal-title">${MONTHS_LONG[calMonth]} ${calYear}</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="changeMonth(-1)">&#8249; Prev</button>
+        <button class="btn btn-sm btn-primary" onclick="goToday()">Today</button>
+        <button class="btn btn-sm" onclick="changeMonth(1)">Next &#8250;</button>
+      </div>
+    </div>
+    <div class="cal-grid">
+      ${DAYS_MON.map(d => `<div class="cal-day-name">${d}</div>`).join('')}
+      ${cells}
+    </div>
+    <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:#5a6a7e">
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#C0DD97;margin-right:4px;vertical-align:middle"></span>Installer</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#FAC775;margin-right:4px;vertical-align:middle"></span>Transport</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;border:1.5px solid #E53935;margin-right:4px;vertical-align:middle"></span>Today</span>
+    </div>`;
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  render();
+}
+function goToday() {
+  calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); render();
+}
+function selectDate(ymd) {
+  selectedDate = ymd; renderDayView(ymd);
+}
+
+function renderDayView(ymd) {
+  const p = ymd.split('-');
+  const dateLabel = `${String(p[2]).padStart(2,'0')} ${MONTHS_SHORT[parseInt(p[1])-1]} ${p[0]}`;
+  const dayJobs = getJobsForDate(ymd, calFilter);
+  document.getElementById('content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <button class="btn btn-sm" onclick="selectedDate=null;renderCalendar()">&#8249; Back</button>
+      <div style="font-size:18px;font-weight:700">${dateLabel}</div>
+      <span style="font-size:13px;color:#5a6a7e">${dayJobs.length} job${dayJobs.length!==1?'s':''}</span>
+    </div>
+    ${dayJobs.length === 0
+      ? `<div class="empty">No jobs scheduled for this day.</div>`
+      : dayJobs.map((j,i) => `
+        <div class="day-job-item">
+          <div class="day-job-num">${i+1}.</div>
+          <div class="day-job-info">
+            <div class="day-job-title">${j.brand||'—'} – ${j.address||'—'}</div>
+            <div class="day-job-sub">
+              <span class="badge ${getSt(j.status).cls}" style="font-size:10px">${getSt(j.status).l}</span>
+              <span style="color:#c0c8d4">·</span>
+              <span class="badge ${getPr(j.priority).cls}" style="font-size:10px">${getPr(j.priority).l}</span>
+              ${j.night_job ? '<span class="badge" style="background:#1a1a2e;color:#fff;font-size:10px">🌙 Night</span>' : ''}
+            </div>
+          </div>
+          <button class="btn btn-view" onclick="viewJob('${j.id}',true)">View</button>
+        </div>`).join('')}`;
+}
+
+// ============================================================
+// JOB LIST
+// ============================================================
+function renderJobs() {
+  const f = jobs.filter(j => {
+    if (fStatus && j.status !== fStatus) return false;
+    if (fPriority && j.priority !== fPriority) return false;
+    if (fDept && j.dept !== fDept) return false;
+    return true;
+  });
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <select class="filter-sel" onchange="fStatus=this.value;renderJobs()">
+        <option value="">All Status</option>
+        ${STATUS.map(s => `<option value="${s.k}"${fStatus===s.k?' selected':''}>${s.l}</option>`).join('')}
+      </select>
+      <select class="filter-sel" onchange="fPriority=this.value;renderJobs()">
+        <option value="">All Priority</option>
+        ${PRIORITY.map(p => `<option value="${p.k}"${fPriority===p.k?' selected':''}>${p.l}</option>`).join('')}
+      </select>
+      <select class="filter-sel" onchange="fDept=this.value;renderJobs()">
+        <option value="">All Departments</option>
+        ${DEPTS.map(d => `<option value="${d}"${fDept===d?' selected':''}>${d}</option>`).join('')}
+      </select>
+      <span style="font-size:12px;color:#5a6a7e">${f.length} record(s)</span>
+    </div>
+    <div class="col-hdr"><div>#</div><div>Client / Brand</div><div>Status</div><div>Priority</div><div>Dept</div><div>Start Date</div><div>End Date</div><div>Action</div></div>
+    ${f.length === 0 ? '<div class="empty">No jobs found.</div>' : f.map((j,i) => `
+      <div class="job-row" onclick="viewJob('${j.id}',false)">
+        <div style="font-size:12px;font-weight:600;color:#185FA5">${i+1}</div>
+        <div>
+          <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.client||'—'}</div>
+          <div style="font-size:11px;color:#5a6a7e">${j.brand||''}</div>
+        </div>
+        <div><span class="badge ${getSt(j.status).cls}">${getSt(j.status).l}</span></div>
+        <div><span class="badge ${getPr(j.priority).cls}">${getPr(j.priority).l}</span></div>
+        <div style="font-size:12px;color:#5a6a7e">${j.dept||'—'}</div>
+        <div style="font-size:12px">${formatDate(j.start_date)}</div>
+        <div style="font-size:12px">${formatDate(j.end_date)}</div>
+        <div onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="viewJob('${j.id}',false)">View</button></div>
+      </div>`).join('')}`;
+}
+
+// ============================================================
+// VIEW JOB
+// ============================================================
+function viewJob(id, readOnly) {
+  const j = jobs.find(x => x.id === id); if (!j) return;
+  const st = getSt(j.status), pr = getPr(j.priority);
+  const dt = j.created_at ? new Date(j.created_at).toLocaleString('en-MY') : '—';
+  let tasks = [];
+  try { tasks = typeof j.tasks === 'string' ? JSON.parse(j.tasks) : (j.tasks || []); } catch(e) {}
+  const canEdit = !readOnly && (userRole === 'creator' || userRole === 'admin');
+
+  document.getElementById('modal-body').innerHTML = `
+    <button style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#8a9ab0" onclick="closeModal()">✕</button>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+      <span class="badge ${st.cls}">${st.l}</span>
+      <span class="badge ${pr.cls}">${pr.l}</span>
+      ${j.night_job ? '<span class="badge" style="background:#1a1a2e;color:#fff">🌙 Night</span>' : ''}
+      <span style="font-size:11px;color:#8a9ab0;margin-left:auto">Created: ${dt}${j.created_by ? ' · by ' + j.created_by : ''}</span>
+    </div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:3px">${j.client||'—'}</div>
+    <div style="font-size:13px;color:#5a6a7e;margin-bottom:16px">${j.brand||''}</div>
+    <div class="section-title">Client Information</div>
+    <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Brand</span>${j.brand||'—'}</div>
+    <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Address</span><span style="white-space:pre-wrap">${j.address||'—'}</span></div>
+    <div class="section-title">Schedule</div>
+    <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Department</span>${j.dept||'—'}</div>
+    <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Start Date</span>${formatDate(j.start_date)}</div>
+    <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">End Date</span>${formatDate(j.end_date)}</div>
+    ${tasks.length > 0 ? `
+    <div class="section-title">Tasks (${tasks.length})</div>
+    ${tasks.map((t,i) => `
+      <div style="background:#f8fafc;border:1px solid #e8edf2;border-radius:10px;padding:12px 14px;margin-bottom:8px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:6px;color:#185FA5">Task ${i+1}: ${t.jobType||'—'}</div>
+        <div class="grid2" style="font-size:13px;margin-bottom:8px">
+          <div><span style="font-size:11px;color:#5a6a7e;display:block">Installer</span>${t.installer||'—'}</div>
+          <div><span style="font-size:11px;color:#5a6a7e;display:block">Transport</span>${t.transport||'—'}</div>
+        </div>
+        ${t.remark ? `<div style="font-size:11px;color:#5a6a7e;margin-bottom:4px">Remark</div><div class="remark-box">${t.remark}</div>` : ''}
+      </div>`).join('')}` : ''}
+    ${canEdit ? `
+    <div class="section-title">Update Status</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      ${STATUS.map(s => `<button class="btn btn-sm${j.status===s.k?' btn-primary':''}" onclick="updateStatus('${j.id}','${s.k}')">${s.l}</button>`).join('')}
+    </div>` : ''}
+    <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid #e8edf2">
+      ${canEdit ? `
+      <button class="btn btn-primary btn-sm" onclick="openForm('${j.id}')">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="delJob('${j.id}')">Delete</button>` : ''}
+      <button class="btn btn-sm" style="margin-left:auto" onclick="closeModal()">Close</button>
+    </div>`;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+async function updateStatus(id, status) {
+  const r = await rest('/jobs?id=eq.' + id, {method:'PATCH', body: JSON.stringify({status})});
+  if (r.ok) { const j = jobs.find(x => x.id === id); if (j) j.status = status; viewJob(id, false); render(); }
+  else alert('Update failed. Please try again.');
+}
+
+async function delJob(id) {
+  if (!confirm('Are you sure you want to delete this job?')) return;
+  const r = await rest('/jobs?id=eq.' + id, {method:'DELETE'});
+  if (r.ok) { jobs = jobs.filter(j => j.id !== id); closeModal(); render(); }
+  else alert('Delete failed.');
+}
+
+// ============================================================
+// TASK BLOCKS
+// ============================================================
+function buildTaskBlock(idx, data = {}) {
+  const jt = data.jobType || '', ins = data.installer || '', tr = data.transport || '', rm = data.remark || '';
+  return `<div class="task-block" id="task-${idx}">
+    <button class="remove-task" onclick="removeTask(${idx})">✕</button>
+    <div style="font-size:11px;font-weight:600;color:#185FA5;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Task #<span class="task-idx">${idx+1}</span></div>
+    <label>Job Type</label>
+    <select style="margin-bottom:0" onchange="handleJobTypeChange(this,${idx})">
+      <option value="">— Select Job Type —</option>
+      ${JOB_TYPES.map(t => `<option value="${t}"${jt===t?' selected':''}>${t}</option>`).join('')}
+    </select>
+    <div class="grid2" style="margin-top:10px">
+      <div>
+        <label>Installer</label>
+        <select id="task-installer-${idx}" style="margin-bottom:0">
+          <option value="">— None —</option>
+          ${INSTALLERS.map(n => `<option value="${n}"${ins===n?' selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label>Transport</label>
+        <select id="task-transport-${idx}" style="margin-bottom:0">
+          <option value="">— None —</option>
+          ${TRANSPORTS.map(n => `<option value="${n}"${tr===n?' selected':''}>${n}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <label>Remark / On-site Instructions</label>
+    <textarea id="task-remark-${idx}" placeholder="Describe what needs to be done on-site...">${rm}</textarea>
+  </div>`;
+}
+
+function handleJobTypeChange(sel, idx) {
+  const ins = document.getElementById('task-installer-' + idx);
+  const tr  = document.getElementById('task-transport-' + idx);
+  if (ins) ins.value = '';
+  if (tr)  tr.value  = '';
+  const auto = autoAssign(sel.value);
+  if (auto.installer && ins) ins.value = auto.installer;
+  if (auto.transport && tr)  tr.value  = auto.transport;
+}
+
+function addTask(data = {}) {
+  const idx = taskCounter++;
+  taskIds.push(idx);
+  const container = document.getElementById('tasks-container');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.innerHTML = buildTaskBlock(idx, data);
+  container.appendChild(div.firstElementChild);
+  renumberTasks(); updateNoTasksMsg();
+}
+
+function removeTask(idx) {
+  const el = document.getElementById('task-' + idx);
+  if (el) { el.remove(); taskIds = taskIds.filter(i => i !== idx); renumberTasks(); updateNoTasksMsg(); }
+}
+
+function renumberTasks() {
+  document.querySelectorAll('.task-block').forEach((el, i) => {
+    const num = el.querySelector('.task-idx'); if (num) num.textContent = i + 1;
+  });
+}
+
+function updateNoTasksMsg() {
+  const msg = document.getElementById('no-tasks-msg');
+  if (msg) msg.style.display = document.querySelectorAll('.task-block').length === 0 ? 'block' : 'none';
+}
+
+function getTasksData() {
+  return taskIds.filter(idx => document.getElementById('task-' + idx)).map(idx => ({
+    jobType:   (document.querySelector(`#task-${idx} select`)?.value) || '',
+    installer: document.getElementById('task-installer-' + idx)?.value || '',
+    transport: document.getElementById('task-transport-' + idx)?.value || '',
+    remark:    document.getElementById('task-remark-' + idx)?.value || ''
+  }));
+}
+
+// ============================================================
+// NEW / EDIT JOB FORM
+// ============================================================
+function openForm(id) {
+  taskCounter = 0; taskIds = [];
+  const job = id ? jobs.find(j => j.id === id) : null;
+  const isEdit = !!job;
+  const today = new Date().toISOString().slice(0, 10);
+  const j = job || {created_by: userName, client:'', brand:'', address:'', dept: DEPTS[0], start_date: today, end_date: today, status:'pending', priority:'med', tasks:[], night_job: false};
+  let existingTasks = [];
+  try { existingTasks = typeof j.tasks === 'string' ? JSON.parse(j.tasks) : (j.tasks || []); } catch(e) {}
+
+  document.getElementById('modal-body').innerHTML = `
+    <button style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#8a9ab0" onclick="closeModal()">✕</button>
+    <div style="font-size:17px;font-weight:600;margin-bottom:18px">${isEdit ? 'Edit Job' : 'New Job'}</div>
+    <div style="background:#f0f4f8;border-radius:8px;padding:10px 14px;font-size:13px;color:#5a6a7e;margin-bottom:4px">
+      Created by: <strong style="color:#1a1a2e">${userName}</strong>
+    </div>
+    <div class="section-title">Client Information</div>
+    <div class="grid2">
+      <div><label>Client Name *</label><input id="f-client" value="${j.client||''}" placeholder="Company name"></div>
+      <div><label>Brand / Outlet</label><input id="f-brand" value="${j.brand||''}" placeholder="Brand or outlet name"></div>
+    </div>
+    <label>Site Address</label>
+    <textarea id="f-address" style="min-height:80px" placeholder="Full on-site address">${j.address||''}</textarea>
+    <div class="section-title">Schedule</div>
+    <div class="grid2">
+      <div><label>Start Date</label><input type="date" id="f-start" value="${j.start_date||today}"></div>
+      <div><label>End Date</label><input type="date" id="f-end" value="${j.end_date||today}"></div>
+    </div>
+    <div class="grid2">
+      <div><label>Status</label><select id="f-status">${STATUS.map(s => `<option value="${s.k}"${j.status===s.k?' selected':''}>${s.l}</option>`).join('')}</select></div>
+      <div><label>Priority</label><select id="f-priority">${PRIORITY.map(p => `<option value="${p.k}"${j.priority===p.k?' selected':''}>${p.l}</option>`).join('')}</select></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 14px;background:#1a1a2e;border-radius:8px;cursor:pointer" onclick="document.getElementById('f-night').checked=!document.getElementById('f-night').checked">
+      <input type="checkbox" id="f-night" ${j.night_job?'checked':''} style="width:16px;height:16px;margin:0;cursor:pointer">
+      <span style="color:#fff;font-size:13px;user-select:none">🌙 Night Job</span>
+    </div>
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Tasks</span>
+      <button class="btn btn-add" onclick="addTask()">＋ Add Task</button>
+    </div>
+    <div id="tasks-container"></div>
+    <div id="no-tasks-msg" style="text-align:center;padding:16px 0;font-size:13px;color:#8a9ab0;display:none">No tasks yet. Click "＋ Add Task" to add one.</div>
+    <div style="display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e8edf2">
+      <button class="btn btn-primary" id="save-btn" onclick="saveJob(${isEdit ? `'${j.id}'` : 'null'})">${isEdit ? 'Save Changes' : 'Create Job'}</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>`;
+
+  if (existingTasks.length > 0) existingTasks.forEach(t => addTask(t));
+  else addTask();
+  updateNoTasksMsg();
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+async function saveJob(id) {
+  const g = i => document.getElementById(i)?.value;
+  const tasks = getTasksData();
+  const data = {
+    created_by:  userName,
+    client:      g('f-client'),
+    brand:       g('f-brand'),
+    address:     g('f-address'),
+    dept:        DEPTS[0],
+    start_date:  g('f-start'),
+    end_date:    g('f-end'),
+    status:      g('f-status'),
+    priority:    g('f-priority'),
+    night_job:   document.getElementById('f-night')?.checked || false,
+    tasks:       JSON.stringify(tasks),
+    user_id:     user?.id,
+    assigned_to: tasks.map(t => [t.installer, t.transport].filter(Boolean).join('/')).join(', ')
+  };
+  if (!data.client) return alert('Please enter the client name.');
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Saving...';
+  let r;
+  if (id === null) {
+    r = await rest('/jobs', {method:'POST', body: JSON.stringify(data)});
+    if (r.ok && r.data) jobs.unshift(Array.isArray(r.data) ? r.data[0] : r.data);
+  } else {
+    r = await rest('/jobs?id=eq.' + id, {method:'PATCH', body: JSON.stringify(data)});
+    if (r.ok) { const j = jobs.find(x => x.id === id); if (j) Object.assign(j, data); }
+  }
+  btn.disabled = false;
+  if (!r.ok) return alert('Save failed: ' + (r.data?.message || 'Please try again.'));
+  closeModal(); render();
+}
+
+// ============================================================
+// USER MANAGEMENT (Admin only)
+// ============================================================
+function renderUsers() {
+  document.getElementById('content').innerHTML = `
+    <div style="max-width:680px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <div style="font-size:18px;font-weight:700">User Management</div>
+          <div style="font-size:13px;color:#5a6a7e;margin-top:2px">Set name and role for team members</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showAddUserGuide()">How to Add User</button>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:16px">
+        <div class="section-title" style="margin-top:0">Set User Name & Role</div>
+        <p style="font-size:13px;color:#5a6a7e;margin-bottom:14px">After creating a user in Supabase, enter their details here to set their name and role.</p>
+        <label>User Email</label>
+        <input id="u-email" placeholder="user@example.com">
+        <label>Full Name</label>
+        <input id="u-name" placeholder="e.g. Roy Ahmad">
+        <label>Role</label>
+        <select id="u-role">
+          <option value="creator">Creator — Can create/edit/delete jobs</option>
+          <option value="installer">Installer — View Installer + Transport calendar</option>
+          <option value="transport">Transport — View Transport calendar only</option>
+        </select>
+        <button class="btn btn-primary" style="width:100%;margin-top:14px" onclick="applyUserRole()">Apply Role</button>
+        <div id="u-result" style="margin-top:10px;font-size:13px;display:none"></div>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)">
+        <div class="section-title" style="margin-top:0">Role Permissions</div>
+        <div class="grid3">
+          <div style="background:#EAF3DE;border-radius:8px;padding:12px">
+            <div style="font-weight:600;color:#3B6D11;margin-bottom:6px">Creator</div>
+            <div style="font-size:12px;color:#5a6a7e;line-height:1.6">✅ New / Edit / Delete jobs<br>✅ All Calendar (All/Installer/Transport)<br>✅ Job List</div>
+          </div>
+          <div style="background:#FAEEDA;border-radius:8px;padding:12px">
+            <div style="font-weight:600;color:#854F0B;margin-bottom:6px">Installer</div>
+            <div style="font-size:12px;color:#5a6a7e;line-height:1.6">❌ Cannot create/edit/delete<br>✅ Installer Calendar<br>✅ Transport Calendar</div>
+          </div>
+          <div style="background:#F1EFE8;border-radius:8px;padding:12px">
+            <div style="font-weight:600;color:#5F5E5A;margin-bottom:6px">Transport</div>
+            <div style="font-size:12px;color:#5a6a7e;line-height:1.6">❌ Cannot create/edit/delete<br>❌ Installer Calendar<br>✅ Transport Calendar only</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function applyUserRole() {
+  const email  = document.getElementById('u-email').value.trim();
+  const name   = document.getElementById('u-name').value.trim();
+  const role   = document.getElementById('u-role').value;
+  const result = document.getElementById('u-result');
+
+  if (!email || !name) {
+    result.style.display = 'block';
+    result.style.color = '#A32D2D';
+    result.textContent = 'Please fill in both email and full name.';
+    return;
+  }
+
+  result.style.display = 'block';
+  result.style.color = '#854F0B';
+  result.textContent = 'Applying...';
+
+  try {
+    // Use Supabase Admin API to update user metadata
+    const r = await fetch(SUPA_URL + '/rest/v1/rpc/set_user_role', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + session.access_token
+      },
+      body: JSON.stringify({user_email: email, user_role: role, user_name: name})
+    });
+
+    if (r.ok) {
+      result.style.color = '#3B6D11';
+      result.innerHTML = `✅ Done! <strong>${name}</strong> (${email}) has been set as <strong>${ROLE_LABELS[role]}</strong>.`;
+      document.getElementById('u-email').value = '';
+      document.getElementById('u-name').value = '';
+      return;
+    }
+
+    // If RPC fails, try direct SQL via rpc
+    const r2 = await fetch(SUPA_URL + '/rest/v1/rpc/exec_sql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + session.access_token
+      },
+      body: JSON.stringify({
+        sql: `UPDATE auth.users SET raw_user_meta_data = '{"full_name": "${name}", "role": "${role}", "email_verified": true}'::jsonb WHERE email = '${email}'`
+      })
+    });
+
+    if (r2.ok) {
+      result.style.color = '#3B6D11';
+      result.innerHTML = `✅ Done! <strong>${name}</strong> (${email}) has been set as <strong>${ROLE_LABELS[role]}</strong>.`;
+      document.getElementById('u-email').value = '';
+      document.getElementById('u-name').value = '';
+      return;
+    }
+
+    throw new Error('failed');
+  } catch(e) {
+    // Fallback: show copyable SQL
+    const sql = `UPDATE auth.users SET raw_user_meta_data = '{"full_name": "${name}", "role": "${role}", "email_verified": true}'::jsonb WHERE email = '${email}';`;
+    result.style.color = '#854F0B';
+    result.innerHTML = `⚠️ Please run this SQL in Supabase SQL Editor:<br>
+      <code style="display:block;background:#f0f4f8;padding:10px;border-radius:6px;font-size:11px;margin-top:8px;word-break:break-all;user-select:all">${sql}</code>
+      <button class="btn btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText('${sql.replace(/'/g,"\'")}').then(()=>{this.textContent='✅ Copied!';setTimeout(()=>this.textContent='📋 Copy SQL',2000)})">📋 Copy SQL</button>`;
+  }
+}
+
+function showAddUserGuide() {
+  document.getElementById('modal-body').innerHTML = `
+    <button style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#8a9ab0" onclick="closeModal()">✕</button>
+    <div style="font-size:17px;font-weight:600;margin-bottom:16px">How to Add a New User</div>
+    <div style="font-size:13px;line-height:2;color:#5a6a7e">
+      <span style="color:#185FA5;font-weight:600">Step 1</span> — Go to <a href="https://supabase.com" target="_blank" style="color:#185FA5">supabase.com</a> and sign in<br>
+      <span style="color:#185FA5;font-weight:600">Step 2</span> — Click <strong style="color:#1a1a2e">Authentication → Users</strong><br>
+      <span style="color:#185FA5;font-weight:600">Step 3</span> — Click <strong style="color:#1a1a2e">Add user → Create new user</strong><br>
+      <span style="color:#185FA5;font-weight:600">Step 4</span> — Enter their email and a password → Click <strong style="color:#1a1a2e">Create user</strong><br>
+      <span style="color:#185FA5;font-weight:600">Step 5</span> — Come back here, fill in the email, name and role → Click <strong style="color:#1a1a2e">Apply Role</strong><br>
+      <span style="color:#185FA5;font-weight:600">Step 6</span> — Send the URL and login details to the staff member
+    </div>
+    <div style="margin-top:16px;background:#E6F1FB;border-radius:8px;padding:12px;font-size:13px;color:#185FA5">
+      🌐 System URL: <strong>https://ezjobsystem.github.io</strong>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="closeModal()">Got it</button>`;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+// ============================================================
+// AUTO LOGIN
+// ============================================================
+(async () => {
+  try {
+    const s = JSON.parse(localStorage.getItem('wms_session'));
+    if (s?.access_token) {
+      const r = await fetch(SUPA_URL + '/auth/v1/user', {
+        headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + s.access_token}
+      });
+      if (r.ok) {
+        user = await r.json(); session = s;
+        userName = user?.user_metadata?.full_name || user?.email || '';
+        userRole = user?.user_metadata?.role || 'creator';
+        await enterApp(); return;
+      }
+      localStorage.removeItem('wms_session');
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>
