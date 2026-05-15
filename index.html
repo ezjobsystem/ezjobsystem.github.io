@@ -367,11 +367,9 @@ function render() {
   if (currentTab === 'calendar') {
     selectedDate ? renderDayView(selectedDate) : renderCalendar();
   } else if (currentTab === 'jobs') {
-    if (userRole === 'admin' || userRole === 'creator') renderJobs();
-    else { currentTab = 'calendar'; renderCalendar(); }
+    renderJobs();
   } else if (currentTab === 'users') {
-    if (userRole === 'admin') renderUsers();
-    else { currentTab = 'calendar'; renderCalendar(); }
+    renderUsers();
   }
 }
 
