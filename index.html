@@ -805,35 +805,58 @@ function renderUsers() {
 }
 
 async function applyUserRole() {
-  const email = document.getElementById('u-email').value.trim();
-  const name  = document.getElementById('u-name').value.trim();
-  const role  = document.getElementById('u-role').value;
+  const email  = document.getElementById('u-email').value.trim();
+  const name   = document.getElementById('u-name').value.trim();
+  const role   = document.getElementById('u-role').value;
   const result = document.getElementById('u-result');
+
   if (!email || !name) {
-    result.style.display = 'block'; result.style.color = '#A32D2D';
-    result.textContent = 'Please fill in both email and full name.'; return;
+    result.style.display = 'block';
+    result.style.color = '#A32D2D';
+    result.textContent = 'Please fill in both email and full name.';
+    return;
   }
-  result.style.display = 'block'; result.style.color = '#854F0B';
+
+  result.style.display = 'block';
+  result.style.color = '#854F0B';
   result.textContent = 'Applying...';
+
   try {
     const r = await fetch(SUPA_URL + '/rest/v1/rpc/set_user_role', {
       method: 'POST',
-      headers: {'Content-Type':'application/json', 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + session.access_token},
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + session.access_token,
+        'Prefer': 'return=representation'
+      },
       body: JSON.stringify({user_email: email, user_role: role, user_name: name})
     });
-    if (r.ok) {
+
+    const text = await r.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch(e) {}
+
+    // Check for success - either HTTP 200 or success:true in response
+    if (r.ok && data !== false) {
+      // Verify it actually updated
+      if (data && data.success === false) {
+        throw new Error(data.error || 'User not found');
+      }
       result.style.color = '#3B6D11';
       result.innerHTML = `✅ Done! <strong>${name}</strong> (${email}) has been set as <strong>${ROLE_LABELS[role]}</strong>.`;
       document.getElementById('u-email').value = '';
       document.getElementById('u-name').value = '';
-    } else throw new Error('failed');
+    } else {
+      throw new Error((data && (data.message || data.error)) || 'Failed to apply role');
+    }
   } catch(e) {
-    // Show copyable SQL as fallback
+    // Fallback: show copyable SQL
     const sql = `UPDATE auth.users SET raw_user_meta_data = '{"full_name": "${name}", "role": "${role}", "email_verified": true}'::jsonb WHERE email = '${email}';`;
     result.style.color = '#854F0B';
-    result.innerHTML = `⚠️ Auto-apply unavailable. Run this SQL in Supabase SQL Editor:<br>
-      <code style="display:block;background:#f0f4f8;padding:10px;border-radius:6px;font-size:11px;margin-top:8px;word-break:break-all">${sql}</code>
-      <button class="btn btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(\`${sql}\`).then(()=>alert('Copied!'))">📋 Copy SQL</button>`;
+    result.innerHTML = `⚠️ Please run this SQL in Supabase SQL Editor:<br>
+      <code style="display:block;background:#f0f4f8;padding:10px;border-radius:6px;font-size:11px;margin-top:8px;word-break:break-all;user-select:all">${sql}</code>
+      <button class="btn btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText('${sql.replace(/'/g,"\'")}').then(()=>{this.textContent='✅ Copied!';setTimeout(()=>this.textContent='📋 Copy SQL',2000)})">📋 Copy SQL</button>`;
   }
 }
 
