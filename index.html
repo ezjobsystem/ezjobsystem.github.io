@@ -159,7 +159,8 @@ label{font-size:12px;color:#5a6a7e;display:block;margin-bottom:4px;margin-top:10
   <div class="tabs" id="main-tabs">
     <div class="tab active" id="tab-cal" onclick="switchTab('calendar',this)">📅 Calendar</div>
     <div class="tab" id="tab-jobs" onclick="switchTab('jobs',this)">📋 Job List</div>
-    <div class="tab" id="tab-new" onclick="openForm(null)" style="color:#185FA5;font-weight:500">＋ New Job</div>
+    <div class="tab" id="tab-newjob" onclick="openForm(null)" style="color:#185FA5;font-weight:500">＋ New Job</div>
+    <div class="tab" id="tab-users" onclick="switchTab('users',this)" style="display:none;color:#1a1a2e;font-weight:500">👥 Users</div>
   </div>
   <div class="content" id="content"><div class="empty"><span class="spin spin-dark"></span> Loading...</div></div>
 </div>
@@ -266,6 +267,19 @@ async function enterApp(){
   const roleColors={admin:'#1a1a2e',creator:'#185FA5',installer:'#3B6D11',transport:'#854F0B'};
   const roleLabels={admin:'Admin',creator:'Creator',installer:'Installer',transport:'Transport'};
   document.getElementById('user-label').innerHTML=`${userName} <span style="background:${roleColors[userRole]||'#185FA5'};color:#fff;font-size:10px;padding:2px 7px;border-radius:99px;margin-left:4px">${roleLabels[userRole]||userRole}</span>`;
+  // Show/hide tabs based on role
+  const jobsTab=document.getElementById('tab-jobs');
+  const newJobTab=document.getElementById('tab-newjob');
+  const usersTab=document.getElementById('tab-users');
+  if(userRole==='installer'||userRole==='transport'){
+    if(jobsTab)jobsTab.style.display='none';
+    if(newJobTab)newJobTab.style.display='none';
+    if(usersTab)usersTab.style.display='none';
+  } else {
+    if(jobsTab)jobsTab.style.display='';
+    if(newJobTab)newJobTab.style.display='';
+    if(usersTab)usersTab.style.display=userRole==='admin'?'':'none';
+  }
   await loadJobs();render();
 }
 
@@ -651,20 +665,4 @@ function openForm(id){
     </div>
     <div id="tasks-container"></div>
     <div id="no-tasks-msg" style="text-align:center;padding:16px 0;font-size:13px;color:#8a9ab0;display:none">No tasks yet. Click "＋ Add Task" above.</div>
-    <div style="display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #e8edf2">
-      <button class="btn btn-primary" id="save-btn" onclick="saveJob(${isEdit?`'${j.id}'`:'null'})">${isEdit?'Save Changes':'Create Job'}</button>
-      <button class="btn" onclick="closeModal()">Cancel</button>
-    </div>`;
-
-  if(existingTasks.length>0)existingTasks.forEach(t=>addTask(t));
-  else addTask();
-  updateNoTasksMsg();
-  document.getElementById('modal').classList.remove('hidden');
-}
-
-async function saveJob(id){
-  const g=i=>document.getElementById(i)?.value;
-  const tasks=getTasksData();
-  const data={
-    created_by:userName,client:g('f-cl'),brand:g('f-br'),
-    address:g('f-ad'),dept
+ 
