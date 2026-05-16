@@ -511,7 +511,7 @@ function openForm(id){
     <div style="font-size:17px;font-weight:600;margin-bottom:18px">${isEdit?'Edit Job':'New Job'}</div>
     <div style="background:#f0f4f8;border-radius:8px;padding:10px 14px;font-size:13px;color:#5a6a7e;margin-bottom:4px">Created by: <strong style="color:#1a1a2e">${userName}</strong></div>
     <div class="section-title">Client Information</div>
-    <div class="grid2"><div><label>Client Name *</label><input id="f-client" value="${j.client||''}" placeholder="Company name"></div><div><label>Brand / Outlet</label><input id="f-brand" value="${j.brand||''}" placeholder="Brand or outlet name"></div></div>
+    <div class="grid2"><div><label>Client Name *</label><input autocomplete="off" id="f-client" value="${j.client||''}" placeholder="Company name"></div><div><label>Brand / Outlet</label><input autocomplete="off" id="f-brand" value="${j.brand||''}" placeholder="Brand or outlet name"></div></div>
     <label>Site Address</label><textarea id="f-address" style="min-height:80px" placeholder="Full on-site address">${j.address||''}</textarea>
     <div class="section-title">Schedule</div>
     <div class="grid2"><div><label>Start Date</label><input type="date" id="f-start" value="${j.start_date||today}"></div><div><label>End Date</label><input type="date" id="f-end" value="${j.end_date||today}"></div></div>
