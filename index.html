@@ -246,6 +246,9 @@ async function enterApp(){
   document.getElementById('tab-jobs').classList.toggle('hidden',!canEdit());
   document.getElementById('tab-newjob').classList.toggle('hidden',!canEdit());
   document.getElementById('tab-users').classList.toggle('hidden',!isAdmin());
+  currentTab='calendar';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-cal').classList.add('active');
   // Default calendar filter
   calFilter=userRole==='transport'?'transport':userRole==='installer'?'installer':'all';
   await loadJobs();
