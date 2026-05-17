@@ -47,9 +47,9 @@ label{font-size:12px;color:#5a6a7e;display:block;margin-bottom:4px;margin-top:10
 .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .2s}
 .card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .section-title{font-size:11px;font-weight:600;color:#5a6a7e;text-transform:uppercase;letter-spacing:.06em;margin:16px 0 8px}
-.job-row{display:grid;grid-template-columns:36px 1fr 100px 80px 90px 100px 100px 52px;gap:6px;align-items:center;padding:10px 14px;background:#fff;border-radius:10px;margin-bottom:6px;font-size:13px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:box-shadow .15s}
+.job-row{display:grid;grid-template-columns:36px 1fr 100px 80px 100px 100px 52px;gap:6px;align-items:center;padding:10px 14px;background:#fff;border-radius:10px;margin-bottom:6px;font-size:13px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:box-shadow .15s}
 .job-row:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
-.col-hdr{display:grid;grid-template-columns:36px 1fr 100px 80px 90px 100px 100px 52px;gap:6px;padding:5px 14px;font-size:11px;color:#5a6a7e;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.col-hdr{display:grid;grid-template-columns:36px 1fr 100px 80px 100px 100px 52px;gap:6px;padding:5px 14px;font-size:11px;color:#5a6a7e;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
 .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .filter-sel{width:auto!important;min-width:120px;font-size:12px;margin-top:0}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto}
@@ -135,7 +135,7 @@ label{font-size:12px;color:#5a6a7e;display:block;margin-bottom:4px;margin-top:10
 <script>
 const SUPA_URL  = 'https://mmetwzpwnadckgrocxef.supabase.co';
 const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXR3enB3bmFkY2tncm9jeGVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjM4ODEsImV4cCI6MjA5MjkzOTg4MX0.c8rMUy-mwMknDp0soPUmpmkZp26LE8T0tW3IEWr0Elc';
-const DEPTS     = ['Manager','Supervisor','Sales','Admin'];
+
 const STATUS    = [{k:'pending',l:'Not Started',cls:'s-pending'},{k:'inprog',l:'In Progress',cls:'s-inprog'},{k:'done',l:'Completed',cls:'s-done'}];
 const PRIORITY  = [{k:'low',l:'LOW',cls:'p-low'},{k:'med',l:'MEDIUM',cls:'p-med'},{k:'high',l:'HIGH',cls:'p-high'},{k:'urg',l:'URGENT',cls:'p-urg'}];
 const JOB_TYPES = ['Install Equipment','Dismantle Equipment','Remove Equipment','Delivery Equipment'];
@@ -154,7 +154,7 @@ let session=null, user=null, userName='', userRole='';
 let jobs=[], currentTab='calendar', selectedDate=null;
 let calYear=new Date().getFullYear(), calMonth=new Date().getMonth(), calFilter='all';
 let taskCounter=0, taskIds=[];
-let fStatus='', fPriority='', fDept='';
+let fStatus='', fPriority='';
 
 // Role helpers
 const isAdmin   = ()=> userRole==='admin';
@@ -378,7 +378,7 @@ function renderJobs(){
     <div class="filters">
       <select class="filter-sel" onchange="fStatus=this.value;renderJobs()"><option value="">All Status</option>${STATUS.map(s=>`<option value="${s.k}"${fStatus===s.k?' selected':''}>${s.l}</option>`).join('')}</select>
       <select class="filter-sel" onchange="fPriority=this.value;renderJobs()"><option value="">All Priority</option>${PRIORITY.map(p=>`<option value="${p.k}"${fPriority===p.k?' selected':''}>${p.l}</option>`).join('')}</select>
-      <select class="filter-sel" onchange="fDept=this.value;renderJobs()"><option value="">All Departments</option>${DEPTS.map(d=>`<option value="${d}"${fDept===d?' selected':''}>${d}</option>`).join('')}</select>
+      
       <span style="font-size:12px;color:#5a6a7e">${f.length} record(s)</span>
     </div>
     <div class="col-hdr"><div>#</div><div>Client / Brand</div><div>Status</div><div>Priority</div><div>Dept</div><div>Start Date</div><div>End Date</div><div>Action</div></div>
