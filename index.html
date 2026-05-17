@@ -135,7 +135,6 @@ label{font-size:12px;color:#5a6a7e;display:block;margin-bottom:4px;margin-top:10
 <script>
 const SUPA_URL  = 'https://mmetwzpwnadckgrocxef.supabase.co';
 const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXR3enB3bmFkY2tncm9jeGVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjM4ODEsImV4cCI6MjA5MjkzOTg4MX0.c8rMUy-mwMknDp0soPUmpmkZp26LE8T0tW3IEWr0Elc';
-
 const STATUS    = [{k:'pending',l:'Not Started',cls:'s-pending'},{k:'inprog',l:'In Progress',cls:'s-inprog'},{k:'done',l:'Completed',cls:'s-done'}];
 const PRIORITY  = [{k:'low',l:'LOW',cls:'p-low'},{k:'med',l:'MEDIUM',cls:'p-med'},{k:'high',l:'HIGH',cls:'p-high'},{k:'urg',l:'URGENT',cls:'p-urg'}];
 const JOB_TYPES = ['Install Equipment','Dismantle Equipment','Remove Equipment','Delivery Equipment'];
@@ -156,11 +155,9 @@ let calYear=new Date().getFullYear(), calMonth=new Date().getMonth(), calFilter=
 let taskCounter=0, taskIds=[];
 let fStatus='', fPriority='';
 
-// Role helpers
 const isAdmin   = ()=> userRole==='admin';
 const canEdit   = ()=> userRole==='admin' || userRole==='creator';
 
-// Helpers
 const getSt     = k=> STATUS.find(s=>s.k===k)||STATUS[0];
 const getPr     = k=> PRIORITY.find(p=>p.k===k)||PRIORITY[0];
 const toYMD     = (y,m,d)=>`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -182,7 +179,6 @@ function autoAssign(jt){
   return{installer:'',transport:''};
 }
 
-// API
 async function callAuth(path,body){
   try{
     const r=await fetch(SUPA_URL+'/auth/v1'+path,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY},body:JSON.stringify(body)});
@@ -196,7 +192,6 @@ async function rest(path,opts={}){
   try{return{ok:r.ok,status:r.status,data:t?JSON.parse(t):null};}catch{return{ok:r.ok,status:r.status,data:t};}
 }
 
-// AUTH
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const pw=document.getElementById('login-pw').value;
@@ -205,7 +200,6 @@ async function doLogin(){
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Signing in...';
   const res=await callAuth('/token?grant_type=password',{email,password:pw});
   btn.disabled=false; btn.innerHTML='Sign In';
-  // Strict check — must have access_token
   if(!res.access_token||res.error||res.error_description){
     return showAuthErr(res.error_description||res.error||'Invalid email or password. Please try again.');
   }
@@ -230,7 +224,6 @@ function doLogout(){
   document.getElementById('auth-err').classList.add('hidden');
 }
 
-// ENTER APP
 async function enterApp(){
   document.getElementById('auth-view').classList.add('hidden');
   document.getElementById('app-view').classList.remove('hidden');
@@ -238,30 +231,22 @@ async function enterApp(){
   const label=RLABELS[userRole]||userRole;
   document.getElementById('user-label').innerHTML=
     `${userName} <span style="background:${color};color:#fff;font-size:10px;padding:2px 8px;border-radius:99px;margin-left:4px">${label}</span>`;
-  // Tab visibility — strictly by role
-  // Admin    : Calendar + Job List + New Job + Users
-  // Creator  : Calendar + Job List + New Job
-  // Installer: Calendar only
-  // Transport: Calendar only
   document.getElementById('tab-jobs').classList.toggle('hidden',!canEdit());
   document.getElementById('tab-newjob').classList.toggle('hidden',!canEdit());
   document.getElementById('tab-users').classList.toggle('hidden',!isAdmin());
   currentTab='calendar';
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-cal').classList.add('active');
-  // Default calendar filter
   calFilter=userRole==='transport'?'transport':userRole==='installer'?'installer':'all';
   await loadJobs();
   render();
 }
 
-// DATA
 async function loadJobs(){
   const r=await rest('/jobs?order=created_at.desc');
   jobs=(r.ok&&Array.isArray(r.data))?r.data:[];
 }
 
-// ROUTING
 function switchTab(tab,el){
   currentTab=tab; selectedDate=null;
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -274,7 +259,6 @@ function render(){
   else if(currentTab==='users') renderUsers();
 }
 
-// CALENDAR
 function getJobsForDate(ymd,filter){
   return jobs.filter(j=>{
     if(!(j.start_date<=ymd&&j.end_date>=ymd))return false;
@@ -291,7 +275,6 @@ function renderCalendar(){
   const fdm=(fd===0)?6:fd-1;
   const dim=new Date(calYear,calMonth+1,0).getDate();
   const dip=new Date(calYear,calMonth,0).getDate();
-  // Filter bar
   let fb='<div class="filter-bar">';
   if(userRole==='admin'||userRole==='creator')
     fb+=`<button class="filter-pill${calFilter==='all'?' fp-active-all':''}" onclick="calFilter='all';renderCalendar()">All</button>`;
@@ -366,19 +349,16 @@ function renderDayView(ymd){
       </div>`).join('')}`;
 }
 
-// JOB LIST
 function renderJobs(){
   const f=jobs.filter(j=>{
     if(fStatus&&j.status!==fStatus)return false;
     if(fPriority&&j.priority!==fPriority)return false;
-    
     return true;
   });
   document.getElementById('content').innerHTML=`
     <div class="filters">
       <select class="filter-sel" onchange="fStatus=this.value;renderJobs()"><option value="">All Status</option>${STATUS.map(s=>`<option value="${s.k}"${fStatus===s.k?' selected':''}>${s.l}</option>`).join('')}</select>
       <select class="filter-sel" onchange="fPriority=this.value;renderJobs()"><option value="">All Priority</option>${PRIORITY.map(p=>`<option value="${p.k}"${fPriority===p.k?' selected':''}>${p.l}</option>`).join('')}</select>
-      
       <span style="font-size:12px;color:#5a6a7e">${f.length} record(s)</span>
     </div>
     <div class="col-hdr"><div>#</div><div>Client / Brand</div><div>Status</div><div>Priority</div><div>Start Date</div><div>End Date</div><div>Action</div></div>
@@ -388,14 +368,12 @@ function renderJobs(){
         <div><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.client||'—'}</div><div style="font-size:11px;color:#5a6a7e">${j.brand||''}</div></div>
         <div><span class="badge ${getSt(j.status).cls}">${getSt(j.status).l}</span></div>
         <div><span class="badge ${getPr(j.priority).cls}">${getPr(j.priority).l}</span></div>
-        
         <div style="font-size:12px">${formatDate(j.start_date)}</div>
         <div style="font-size:12px">${formatDate(j.end_date)}</div>
         <div onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="viewJob('${j.id}',false)">View</button></div>
       </div>`).join('')}`;
 }
 
-// VIEW JOB
 function viewJob(id,readOnly){
   const j=jobs.find(x=>x.id===id);if(!j)return;
   const st=getSt(j.status),pr=getPr(j.priority);
@@ -415,7 +393,6 @@ function viewJob(id,readOnly){
     <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Brand</span>${j.brand||'—'}</div>
     <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Address</span><span style="white-space:pre-wrap">${j.address||'—'}</span></div>
     <div class="section-title">Schedule</div>
-    <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Department</span>${j.dept||'—'}</div>
     <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">Start Date</span>${formatDate(j.start_date)}</div>
     <div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px"><span style="color:#5a6a7e;min-width:80px;font-size:12px">End Date</span>${formatDate(j.end_date)}</div>
     ${tasks.length>0?`<div class="section-title">Tasks (${tasks.length})</div>${tasks.map((t,i)=>`
@@ -448,7 +425,6 @@ async function delJob(id){
   else alert('Delete failed.');
 }
 
-// TASK BLOCKS
 function buildTaskBlock(idx,data={}){
   const jt=data.jobType||'',ins=data.installer||'',tr=data.transport||'',rm=data.remark||'';
   return`<div class="task-block" id="task-${idx}">
@@ -498,13 +474,12 @@ function getTasksData(){
   }));
 }
 
-// NEW / EDIT JOB FORM
 function openForm(id){
   taskCounter=0;taskIds=[];
   const job=id?jobs.find(j=>j.id===id):null;
   const isEdit=!!job;
   const today=new Date().toISOString().slice(0,10);
-  const j=job||{created_by:userName,client:'',brand:'',address:'',dept:DEPTS[0],start_date:today,end_date:today,status:'pending',priority:'med',tasks:[],night_job:false};
+  const j=job||{created_by:userName,client:'',brand:'',address:'',start_date:today,end_date:today,status:'pending',priority:'med',tasks:[],night_job:false};
   let et=[];try{et=typeof j.tasks==='string'?JSON.parse(j.tasks):(j.tasks||[]);}catch(e){}
   document.getElementById('modal-body').innerHTML=`
     <button style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#8a9ab0" onclick="closeModal()">✕</button>
@@ -537,7 +512,7 @@ function openForm(id){
 async function saveJob(id){
   const g=i=>document.getElementById(i)?.value;
   const tasks=getTasksData();
-  const data={created_by:userName,client:g('f-client'),brand:g('f-brand'),address:g('f-address'),dept:DEPTS[0],start_date:g('f-start'),end_date:g('f-end'),status:g('f-status'),priority:g('f-priority'),night_job:document.getElementById('f-night')?.checked||false,tasks:JSON.stringify(tasks),user_id:user?.id,assigned_to:tasks.map(t=>[t.installer,t.transport].filter(Boolean).join('/')).join(', ')};
+  const data={created_by:userName,client:g('f-client'),brand:g('f-brand'),address:g('f-address'),start_date:g('f-start'),end_date:g('f-end'),status:g('f-status'),priority:g('f-priority'),night_job:document.getElementById('f-night')?.checked||false,tasks:JSON.stringify(tasks),user_id:user?.id,assigned_to:tasks.map(t=>[t.installer,t.transport].filter(Boolean).join('/')).join(', ')};
   if(!data.client)return alert('Please enter the client name.');
   const btn=document.getElementById('save-btn');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Saving...';
@@ -549,7 +524,6 @@ async function saveJob(id){
   closeModal();render();
 }
 
-// USER MANAGEMENT (Admin only)
 function renderUsers(){
   document.getElementById('content').innerHTML=`
     <div style="max-width:680px">
@@ -620,7 +594,6 @@ function showAddUserGuide(){
 
 function closeModal(){document.getElementById('modal').classList.add('hidden');}
 
-// AUTO LOGIN — Always fetch fresh user data from Supabase
 (async()=>{
   try{
     const s=JSON.parse(localStorage.getItem('wms_session'));
