@@ -371,7 +371,7 @@ function renderJobs(){
   const f=jobs.filter(j=>{
     if(fStatus&&j.status!==fStatus)return false;
     if(fPriority&&j.priority!==fPriority)return false;
-    if(fDept&&j.dept!==fDept)return false;
+    
     return true;
   });
   document.getElementById('content').innerHTML=`
@@ -381,14 +381,14 @@ function renderJobs(){
       
       <span style="font-size:12px;color:#5a6a7e">${f.length} record(s)</span>
     </div>
-    <div class="col-hdr"><div>#</div><div>Client / Brand</div><div>Status</div><div>Priority</div><div>Dept</div><div>Start Date</div><div>End Date</div><div>Action</div></div>
+    <div class="col-hdr"><div>#</div><div>Client / Brand</div><div>Status</div><div>Priority</div><div>Start Date</div><div>End Date</div><div>Action</div></div>
     ${f.length===0?'<div class="empty">No jobs found.</div>':f.map((j,i)=>`
       <div class="job-row" onclick="viewJob('${j.id}',false)">
         <div style="font-size:12px;font-weight:600;color:#185FA5">${i+1}</div>
         <div><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.client||'—'}</div><div style="font-size:11px;color:#5a6a7e">${j.brand||''}</div></div>
         <div><span class="badge ${getSt(j.status).cls}">${getSt(j.status).l}</span></div>
         <div><span class="badge ${getPr(j.priority).cls}">${getPr(j.priority).l}</span></div>
-        <div style="font-size:12px;color:#5a6a7e">${j.dept||'—'}</div>
+        
         <div style="font-size:12px">${formatDate(j.start_date)}</div>
         <div style="font-size:12px">${formatDate(j.end_date)}</div>
         <div onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="viewJob('${j.id}',false)">View</button></div>
