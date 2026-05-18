@@ -303,7 +303,7 @@ function renderCalendar(){
     dj.forEach(j=>{
       const rush=isRushJob(j);
       const cat=jobCategory(j);
-      const lbl=j.brand||j.client||'—';
+      const lbl=(j.night_job?'🌙 ':'')+(j.brand||j.client||'—');
       if(rush){
         pills+=`<span class="job-pill pill-rush">⚠️ ${lbl}</span>`;
       } else if(calFilter==='installer'){
