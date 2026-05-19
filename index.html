@@ -533,7 +533,7 @@ function openForm(id){
 async function saveJob(id){
   const g=i=>document.getElementById(i)?.value;
   const tasks=getTasksData();
-  const data={created_by:userName,client:g('f-client'),brand:g('f-brand'),address:g('f-address'),start_date:g('f-start'),end_date:g('f-end'),status:g('f-status'),priority:g('f-priority'),night_job:document.getElementById('f-night')?.checked||false,tasks:JSON.stringify(tasks),user_id:user?.id,assigned_to:tasks.map(t=>[t.installer,t.transport].filter(Boolean).join('/')).join(', ')};
+  const origCreator=id?jobs.find(j=>j.id===id)?.created_by||userName:userName;const data={created_by:origCreator,client:g('f-client'),brand:g('f-brand'),address:g('f-address'),start_date:g('f-start'),end_date:g('f-end'),status:g('f-status'),priority:g('f-priority'),night_job:document.getElementById('f-night')?.checked||false,tasks:JSON.stringify(tasks),user_id:user?.id,assigned_to:tasks.map(t=>[t.installer,t.transport].filter(Boolean).join('/')).join(', ')};
   if(!data.client)return alert('Please enter the client name.');
   const btn=document.getElementById('save-btn');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span>Saving...';
