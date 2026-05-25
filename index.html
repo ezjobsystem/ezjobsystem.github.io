@@ -369,6 +369,7 @@ function renderDayView(ymd){
 
 function renderJobs(){
   jobs.sort((a,b)=>a.start_date>b.start_date?1:-1);
+  const f=jobs.filter(j=>{
     if(fStatus&&j.status!==fStatus)return false;
     if(fPriority&&j.priority!==fPriority)return false;
     return true;
